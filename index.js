@@ -1,31 +1,36 @@
-import WebSocket, { WebSocketServer } from "ws";
+import WebSocket, { WebSocketServer } from 'ws'
 
 const socketServer = new WebSocketServer({
-  port: process.env.PORT || 3001,
-});
+	port: process.env.PORT || 3001,
+})
 
-socketServer.on("error", console.error);
-socketServer.on("listening", () => {
-  console.log("listening on port %s", socketServer.options.port);
-});
+const clientNames = new Map()
 
-socketServer.on("connection", (socket) => {
-  const socketName = `${socket._socket.remoteAddress}:${socket._socket.remotePort}`;
-  console.log("connected: %s", socketName);
-  socket.on("error", console.error);
-  socket.on("close", (code, reason) => {
-    console.log("disconnected: %s", socketName);
-  });
+socketServer.on('error', console.error)
+socketServer.on('listening', () => {
+	console.log('listening on port %s', socketServer.options.port)
+})
 
-  socket.on("message", (message, isBinary) => {
-    //use socket name to log message
-    console.log("received from %s: %s", socketName, message);
-    socketServer.clients.forEach((client) => {
-      if (client !== socket && client.readyState === WebSocket.OPEN) {
-        const clientName = `${client._socket.remoteAddress}:${client._socket.remotePort}`;
-        console.log("sending to %s: %s", clientName, message);
-        client.send(message, { binary: isBinary });
-      }
-    });
-  });
-});
+socketServer.on('connection', (socket) => {
+	socket.on('error', console.error)
+	socket.on('close', (code, reason) => {
+		console.log('disconnected: %s', clientNames.get(socket))
+		clientNames.delete(socket)
+	})
+
+	socket.on('message', (message, isBinary) => {
+		if (!clientNames.has(socket)) {
+			clientNames.set(socket, message.toString())
+			console.log('connected: %s', clientNames.get(socket))
+		} else {
+			const clientName = clientNames.get(socket)
+			console.log('received from %s: %s', clientName, message)
+			socketServer.clients.forEach((client) => {
+				if (client.readyState === WebSocket.OPEN && clientNames.get(client) !== clientName) {
+					console.log('sending to %s: %s', clientName, message)
+					client.send(message, { binary: isBinary })
+				}
+			})
+		}
+	})
+})
