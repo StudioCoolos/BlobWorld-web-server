@@ -27,7 +27,7 @@ socketServer.on('connection', (socket) => {
 			console.log('received from %s: %s', clientName, message)
 			socketServer.clients.forEach((client) => {
 				if (client.readyState === WebSocket.OPEN && clientNames.get(client) !== clientName) {
-					console.log('sending to %s: %s', clientName, message)
+					console.log('sending to %s: %s', clientNames.get(client), message)
 					client.send(message, { binary: isBinary })
 				}
 			})
