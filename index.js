@@ -33,7 +33,7 @@ socketServer.on('connection', (socket) => {
 					if (clientNames.get(client) !== recipient) return
 					console.log('sending to %s: %s', recipient, message)
 					client.send(message, { binary: isBinary })
-				} else if (clientNames.get(client) !== clientName) {
+				} else if (clientNames.get(client).split('_')[0] !== clientName) {
 					console.log('sending to %s: %s', clientNames.get(client), message)
 					client.send(message, { binary: isBinary })
 				}
