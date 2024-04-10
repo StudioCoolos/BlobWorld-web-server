@@ -26,7 +26,7 @@ socketServer.on('connection', (socket) => {
 			const clientName = clientNames.get(socket)
 			console.log('received from %s: %s', clientName, message)
 			socketServer.clients.forEach((client) => {
-				if (client.readyState !== WebSocket.OPEN && client === socket) return
+				if (client.readyState !== WebSocket.OPEN || client === socket) return
 				if (message.includes('recipient')) {
 					const json = JSON.parse(message)
 					const recipient = json.recipient
