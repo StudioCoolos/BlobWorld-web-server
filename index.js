@@ -18,6 +18,12 @@ socketServer.on('connection', (socket) => {
 		clientNames.delete(socket)
 	})
 
+	setTimeout(() => {
+		if (!clientNames.has(socket)) {
+			socket.close()
+		}
+	}, 5000)
+
 	socket.on('message', (message, isBinary) => {
 		if (!clientNames.has(socket)) {
 			clientNames.set(socket, message.toString())
